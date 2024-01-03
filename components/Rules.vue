@@ -49,7 +49,6 @@ const isOpen = ref(false)
   padding-right: 35px;
   padding-bottom: 60px;
   padding-left: 35px;
-
   width: 100%;
   height: 100%;
   box-sizing: border-box;
@@ -66,8 +65,36 @@ const isOpen = ref(false)
   margin-top: 110px;
 }
 .modal span {
+  cursor: pointer;
   color: #d0d0d3;
   font-size: 32px;
   margin-top: auto;
+}
+
+@media (min-width: 650px) {
+  .modal {
+    border-radius: 8px;
+    align-items: normal;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding-top: 30px;
+    padding-right: 30px;
+    padding-left: 30px;
+    height: 415px;
+    width: 400px;
+  }
+  .modal h1 {
+    font-size: 32px;
+  }
+  .modal img {
+    margin-top: 45px;
+    align-self: center;
+  }
+  .modal span {
+    position: absolute;
+    top: 32px;
+    right: 25px;
+  }
 }
 </style>
