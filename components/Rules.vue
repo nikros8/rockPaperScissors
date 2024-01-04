@@ -2,6 +2,7 @@
 import rulesSvg from "assets/svg/image-rules.svg"
 const isOpen = ref(false)
 </script>
+<!-- TODO - Modal on desktop should have background with opacity -->
 <template>
   <div class="rules">
     <button @click="isOpen = true">RULES</button>
