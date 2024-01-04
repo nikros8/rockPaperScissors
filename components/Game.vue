@@ -27,7 +27,9 @@ const allHands: Record<
   },
 })
 const playerPicked = ref<string | undefined>(undefined)
-const computerPicked = ref<string | null>(null)
+const computerPicked = ref<string | undefined>(undefined)
+const showPlayerHand = ref<boolean>(false)
+const showOpponentHand = ref<boolean>(false)
 
 function handleGame(choice: string) {
   if (playerPicked.value === undefined) {
@@ -35,10 +37,14 @@ function handleGame(choice: string) {
     computerPicked.value = Object.keys(allHands)[Math.floor(Math.random() * 3)]
     isBackgroundVisible.value = false
     for (const key in allHands) {
-      if (key !== playerPicked.value) {
-        allHands[key].isVisible = false
-      }
+      allHands[key].isVisible = false
     }
+    setTimeout(() => {
+      showPlayerHand.value = true
+    }, 500)
+    setTimeout(() => {
+      showOpponentHand.value = true
+    }, Math.floor(Math.random() * (2500 - 1500 + 1) + 1500))
   }
 }
 </script>
@@ -57,7 +63,6 @@ function handleGame(choice: string) {
         <Hand
           v-if="value.isVisible"
           :name="name"
-          :playerPicked="playerPicked"
           :color-primary="value.outerCircleColorPrimary"
           :color-secondary="value.outerCircleColorSecondary"
           :class="[playerPicked === name ? 'player-picked' : name]"
@@ -65,14 +70,23 @@ function handleGame(choice: string) {
         />
       </Transition>
     </template>
-    <!-- <Hand
-      v-if="computerPicked"
+
+    <Hand
+      v-if="showPlayerHand && playerPicked"
+      :name="playerPicked"
+      :color-primary="allHands[playerPicked].outerCircleColorPrimary"
+      :color-secondary="allHands[playerPicked].outerCircleColorSecondary"
+      class="player-picked"
+    />
+    <Hand
+      v-if="showOpponentHand && computerPicked"
       :name="computerPicked"
       :color-primary="allHands[computerPicked].outerCircleColorPrimary"
       :color-secondary="allHands[computerPicked].outerCircleColorSecondary"
       class="computer-picked"
-    /> -->
+    />
   </div>
+  <div></div>
 </template>
 
 <style scope>
@@ -91,6 +105,15 @@ function handleGame(choice: string) {
   flex-wrap: wrap;
   justify-content: space-between;
   margin-top: 105px;
+}
+
+.game .player-picked {
+  display: flex;
+  flex-direction: column;
+}
+.game .computer-picked {
+  display: flex;
+  flex-direction: column;
 }
 
 .game .rock {

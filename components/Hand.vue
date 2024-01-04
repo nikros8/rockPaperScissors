@@ -5,11 +5,6 @@ import scissorsSvg from "assets/svg/icon-scissors.svg"
 const props = defineProps({
   name: {
     type: String,
-    required: true,
-  },
-  playerPicked: {
-    type: String,
-    require: true,
   },
   colorPrimary: {
     type: String,
@@ -30,27 +25,19 @@ const colors = reactive({
   },
 })
 
-const didPlayerChoose = (): boolean => {
-  if (props.playerPicked === props.name) {
-    return true
-  } else {
-    return false
-  }
-}
-
 const capitalize = (value: string): string => {
   const capitalized = value.charAt(0).toUpperCase() + value.slice(1)
   return capitalized
 }
 
-const getIconPath = (name: string): string => {
+const getIconPath = (name: string | undefined): string => {
   // Create a mapping of names to SVG files
   const iconMap: Record<string, string> = {
     rock: rockSvg,
     paper: paperSvg,
     scissors: scissorsSvg,
   }
-  return iconMap[name.toLowerCase()] || ""
+  return name !== undefined ? iconMap[name.toLowerCase()] : ""
 }
 </script>
 <template>
@@ -59,11 +46,10 @@ const getIconPath = (name: string): string => {
       <div class="outer-circle secondary" :style="colors.secondaryColor"></div>
       <div class="inner-circle primary">
         <div class="inner-circle secondary">
-          <img :src="getIconPath(name)" :alt="`${capitalize(name)}`" />
+          <img v-if="name" :src="getIconPath(name)" :alt="`${capitalize(name)}`" />
         </div>
       </div>
     </div>
-    <h2 v-if="didPlayerChoose()">YOU PICKED</h2>
   </div>
 </template>
 <style scoped>
