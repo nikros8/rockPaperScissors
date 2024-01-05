@@ -41,10 +41,10 @@ function handleGame(choice: string) {
     }
     setTimeout(() => {
       showPlayerHand.value = true
+      setTimeout(() => {
+        showOpponentHand.value = true
+      }, Math.floor(Math.random() * (2500 - 1500 + 1) + 1500))
     }, 500)
-    setTimeout(() => {
-      showOpponentHand.value = true
-    }, Math.floor(Math.random() * (2500 - 1500 + 1) + 1500))
   }
 }
 </script>
@@ -70,23 +70,27 @@ function handleGame(choice: string) {
         />
       </Transition>
     </template>
-
-    <Hand
-      v-if="showPlayerHand && playerPicked"
-      :name="playerPicked"
-      :color-primary="allHands[playerPicked].outerCircleColorPrimary"
-      :color-secondary="allHands[playerPicked].outerCircleColorSecondary"
-      class="player-picked"
-    />
-    <Hand
-      v-if="showOpponentHand && computerPicked"
-      :name="computerPicked"
-      :color-primary="allHands[computerPicked].outerCircleColorPrimary"
-      :color-secondary="allHands[computerPicked].outerCircleColorSecondary"
-      class="computer-picked"
-    />
+    <div v-if="showPlayerHand && playerPicked" class="player-hand">
+      <Hand
+        :name="playerPicked"
+        :color-primary="allHands[playerPicked].outerCircleColorPrimary"
+        :color-secondary="allHands[playerPicked].outerCircleColorSecondary"
+      />
+      <div class="title">YOU PICKED</div>
+    </div>
+    <div v-if="showOpponentHand && computerPicked" class="computer-hand">
+      <Hand
+        :name="computerPicked"
+        :color-primary="allHands[computerPicked].outerCircleColorPrimary"
+        :color-secondary="allHands[computerPicked].outerCircleColorSecondary"
+      />
+      <div class="title">THE HOUSE PICKED</div>
+    </div>
+    <div v-if="!showOpponentHand && showPlayerHand" class="computer-hand skeleton">
+      <div class="skeleton-circle"></div>
+      <div class="title">THE HOUSE PICKED</div>
+    </div>
   </div>
-  <div></div>
 </template>
 
 <style scope>
@@ -107,13 +111,22 @@ function handleGame(choice: string) {
   margin-top: 105px;
 }
 
-.game .player-picked {
+.game .player-hand,
+.game .computer-hand {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
-.game .computer-picked {
-  display: flex;
-  flex-direction: column;
+
+.game .computer-hand.skeleton {
+  align-self: flex-end;
+}
+.game .computer-hand .skeleton-circle {
+  background-color: #192944;
+  height: 110px;
+  width: 110px;
+  margin-bottom: 10px;
+  border-radius: 50%;
 }
 
 .game .rock {
@@ -128,5 +141,12 @@ function handleGame(choice: string) {
   top: 53%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.game .title {
+  color: white;
+  font-size: 16px;
+  margin-top: 25px;
+  letter-spacing: 1.3px;
 }
 </style>
