@@ -1,4 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const props = defineProps({
+  score: {
+    type: Number,
+    required: true,
+  },
+})
+</script>
 <template>
   <div class="header">
     <div class="game-title">
@@ -10,7 +17,7 @@
       <div class="score-title-container">
         <div class="score-title">SCORE</div>
       </div>
-      <div class="score-value">12</div>
+      <div class="score-value">{{ score }}</div>
     </div>
   </div>
 </template>
