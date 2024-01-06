@@ -103,4 +103,18 @@ const getIconPath = (name: string | undefined): string => {
 .inner-circle.secondary.scissors img {
   width: 46px;
 }
+
+@media (min-width: 750px) {
+  .outer-circle {
+    height: 200px;
+    width: 200px;
+  }
+  .inner-circle {
+    height: 155px;
+    width: 155px;
+  }
+  .inner-circle img {
+    width: 70px;
+  }
+}
 </style>

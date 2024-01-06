@@ -74,7 +74,7 @@ function handleResult(playerPicked: string, computerPicked: string) {
   }
   updateScoreAndEmit(result.value)
 }
-
+const resizeContainer = ref<boolean>(false)
 function handleGame(choice: string) {
   if (playerPicked.value === undefined) {
     playerPicked.value = choice
@@ -84,7 +84,12 @@ function handleGame(choice: string) {
       showPlayerHand.value = true
       setTimeout(() => {
         showOpponentHand.value = true
-        handleResult(playerPicked.value!, computerPicked.value!)
+        setTimeout(() => {
+          resizeContainer.value = true
+          setTimeout(() => {
+            handleResult(playerPicked.value!, computerPicked.value!)
+          }, 1000)
+        }, 500)
       }, Math.floor(Math.random() * (2500 - 1500 + 1) + 1500))
     }, 500)
   }
@@ -96,56 +101,63 @@ function startNewGame() {
   showOpponentHand.value = false
   playerPicked.value = undefined
   computerPicked.value = undefined
+  resizeContainer.value = false
   result.value = ""
 }
 </script>
 <template>
-  <div :class="['game', showPlayerHand ? 'is-playing' : 'not-playing']">
-    <Transition>
-      <img
-        v-if="isBackgroundVisible"
-        class="triangle-background"
-        :src="triangleSvg"
-        alt="triangle"
-      />
-    </Transition>
-    <template v-for="(value, name) in allHands">
+  <div :class="['game-container', resizeContainer ? 'resize-container' : '']">
+    <div :class="['game', showPlayerHand ? 'is-playing' : 'not-playing']">
       <Transition>
-        <Hand
-          v-if="!playerPicked && !computerPicked"
-          :name="name"
-          :color-primary="value.outerCircleColorPrimary"
-          :color-secondary="value.outerCircleColorSecondary"
-          :class="[playerPicked === name ? 'player-picked' : name]"
-          @click="handleGame(name)"
+        <img
+          v-if="isBackgroundVisible"
+          class="triangle-background"
+          :src="triangleSvg"
+          alt="triangle"
         />
       </Transition>
-    </template>
-    <div class="hands">
-      <div v-if="showPlayerHand && playerPicked" class="player-hand">
-        <Hand
-          :name="playerPicked"
-          :color-primary="allHands[playerPicked].outerCircleColorPrimary"
-          :color-secondary="allHands[playerPicked].outerCircleColorSecondary"
-        />
-        <div class="title">YOU PICKED</div>
+      <template v-for="(value, name) in allHands">
+        <Transition>
+          <Hand
+            v-if="!playerPicked && !computerPicked"
+            :name="name"
+            :color-primary="value.outerCircleColorPrimary"
+            :color-secondary="value.outerCircleColorSecondary"
+            :class="[playerPicked === name ? 'player-picked' : name]"
+            @click="handleGame(name)"
+          />
+        </Transition>
+      </template>
+      <div class="hands">
+        <div v-if="showPlayerHand && playerPicked" class="player-hand">
+          <Hand
+            class="hand"
+            :name="playerPicked"
+            :color-primary="allHands[playerPicked].outerCircleColorPrimary"
+            :color-secondary="allHands[playerPicked].outerCircleColorSecondary"
+          />
+          <div class="title">YOU PICKED</div>
+        </div>
+        <div v-if="showOpponentHand && computerPicked" class="computer-hand">
+          <Hand
+            class="hand"
+            :name="computerPicked"
+            :color-primary="allHands[computerPicked].outerCircleColorPrimary"
+            :color-secondary="allHands[computerPicked].outerCircleColorSecondary"
+          />
+          <div class="title">THE HOUSE PICKED</div>
+        </div>
+        <div v-if="!showOpponentHand && showPlayerHand" class="computer-hand skeleton">
+          <div class="skeleton-circle-container">
+            <div class="skeleton-circle"></div>
+          </div>
+          <div class="title">THE HOUSE PICKED</div>
+        </div>
       </div>
-      <div v-if="showOpponentHand && computerPicked" class="computer-hand">
-        <Hand
-          :name="computerPicked"
-          :color-primary="allHands[computerPicked].outerCircleColorPrimary"
-          :color-secondary="allHands[computerPicked].outerCircleColorSecondary"
-        />
-        <div class="title">THE HOUSE PICKED</div>
+      <div v-if="result" class="result">
+        <div class="result-title">{{ result }}</div>
+        <button @click="startNewGame()">PLAY AGAIN</button>
       </div>
-      <div v-if="!showOpponentHand && showPlayerHand" class="computer-hand skeleton">
-        <div class="skeleton-circle"></div>
-        <div class="title">THE HOUSE PICKED</div>
-      </div>
-    </div>
-    <div v-if="result" class="result">
-      <div class="result-title">{{ result }}</div>
-      <button @click="startNewGame()">PLAY AGAIN</button>
     </div>
   </div>
 </template>
@@ -243,5 +255,51 @@ function startNewGame() {
 }
 .game .result button:hover {
   color: #d73562;
+}
+
+@media (min-width: 750px) {
+  .game-container.resize-container {
+    max-width: 700px;
+  }
+  .game {
+    margin-top: 63px;
+  }
+  .game .title {
+    margin-top: 0;
+    margin-bottom: 50px;
+  }
+  .game.game.is-playing {
+    margin-top: 75px;
+  }
+  .game .triangle-background {
+    width: 300px;
+  }
+  .game .computer-hand .skeleton-circle-container {
+    height: 200px;
+    width: 200px;
+  }
+  .game .computer-hand .skeleton-circle {
+    height: 180px;
+    width: 180px;
+  }
+  .game .player-hand,
+  .game .computer-hand {
+    flex-direction: column-reverse;
+  }
+  .game .result {
+    position: absolute;
+    margin-top: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+  }
+}
+
+@media (max-height: 740px) {
+  .game {
+    margin-top: 50px;
+  }
+  .game .result {
+    margin-top: 40px;
+  }
 }
 </style>

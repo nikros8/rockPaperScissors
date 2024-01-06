@@ -68,4 +68,34 @@ const props = defineProps({
   font-weight: 700;
   line-height: 1;
 }
+
+@media (min-width: 750px) {
+  .header {
+    padding: 18px 22px 18px 30px;
+    height: 150px;
+    margin-top: 50px;
+    outline-width: 3px;
+    border-radius: 15px;
+  }
+  .header .game-title {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 32px;
+  }
+  .header .score {
+    border-radius: 10px;
+    width: 150px;
+  }
+  .header .score .score-title-container {
+    height: 35px;
+  }
+  .header .score .score-title-container .score-title {
+    font-size: 17px;
+    letter-spacing: 1.6px;
+  }
+  .header .score .score-value {
+    font-size: 65px;
+    line-height: 1;
+  }
+}
 </style>

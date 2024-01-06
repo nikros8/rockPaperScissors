@@ -21,7 +21,7 @@ const isOpen = ref(false)
   justify-content: center;
   position: absolute;
   width: 100%;
-  bottom: 55px;
+  bottom: 7.3%;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -96,6 +96,15 @@ const isOpen = ref(false)
     position: absolute;
     top: 32px;
     right: 25px;
+  }
+  @media (min-width: 750px) {
+    .rules {
+      justify-content: flex-end; /* Align to the right */
+      transform: none;
+      left: unset;
+      right: 2.3%;
+      bottom: 4%;
+    }
   }
 }
 </style>
