@@ -17,7 +17,7 @@ const props = defineProps({
       <div class="score-title-container">
         <div class="score-title">SCORE</div>
       </div>
-      <div class="score-value">{{ score }}</div>
+      <div class="score-value">{{ props.score }}</div>
     </div>
   </div>
 </template>

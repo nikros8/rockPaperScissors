@@ -1,27 +1,32 @@
 <script setup lang="ts">
-import rockSvg from "assets/svg/icon-rock.svg"
-import paperSvg from "assets/svg/icon-paper.svg"
-import scissorsSvg from "assets/svg/icon-scissors.svg"
+import rockSVG from "/assets/svg/icon-rock.svg"
+import paperSVG from "/assets/svg/icon-paper.svg"
+import scissorsSVG from "/assets/svg/icon-scissors.svg"
 const props = defineProps({
-  name: {
+  handType: {
     type: String,
   },
-  colorPrimary: {
+  outerCircleBackgroundPrimary: {
     type: String,
     required: true,
   },
-  colorSecondary: {
+  outerCircleBackgroundSecondary: {
     type: String,
     required: true,
   },
 })
+const handImages: Record<string, string> = {
+  rock: rockSVG,
+  paper: paperSVG,
+  scissors: scissorsSVG,
+}
 
 const colors = reactive({
   primaryColor: {
-    backgroundColor: props.colorPrimary,
+    backgroundColor: props.outerCircleBackgroundPrimary,
   },
   secondaryColor: {
-    backgroundColor: props.colorSecondary,
+    backgroundColor: props.outerCircleBackgroundSecondary,
   },
 })
 
@@ -31,13 +36,7 @@ const capitalize = (value: string): string => {
 }
 
 const getIconPath = (name: string | undefined): string => {
-  // Create a mapping of names to SVG files
-  const iconMap: Record<string, string> = {
-    rock: rockSvg,
-    paper: paperSvg,
-    scissors: scissorsSvg,
-  }
-  return name !== undefined ? iconMap[name.toLowerCase()] : ""
+  return name !== undefined ? handImages[name.toLowerCase()] : ""
 }
 </script>
 <template>
@@ -46,7 +45,7 @@ const getIconPath = (name: string | undefined): string => {
       <div class="outer-circle secondary" :style="colors.secondaryColor"></div>
       <div class="inner-circle primary">
         <div class="inner-circle secondary">
-          <img v-if="name" :src="getIconPath(name)" :alt="`${capitalize(name)}`" />
+          <img v-if="handType" :src="getIconPath(handType)" :alt="`${capitalize(handType)}`" />
         </div>
       </div>
     </div>

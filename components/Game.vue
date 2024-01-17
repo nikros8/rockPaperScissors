@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import triangleSvg from "assets/svg/bg-triangle.svg"
-import rockSvg from "assets/svg/icon-rock.svg"
-import paperSvg from "assets/svg/icon-paper.svg"
-import scissorsSvg from "assets/svg/icon-scissors.svg"
+import triangleSvg from "/assets/svg/bg-triangle.svg"
 
 const newScore = ref(0)
 
@@ -23,22 +20,22 @@ const isBackgroundVisible = ref(true)
 
 const allHands: Record<
   string,
-  { isVisible: boolean; outerCircleColorPrimary: string; outerCircleColorSecondary: string }
+  { isVisible: boolean; backgroundPrimary: string; backgroundSecondary: string }
 > = reactive({
   paper: {
     isVisible: true,
-    outerCircleColorPrimary: "#304c9b",
-    outerCircleColorSecondary: "hsl(230, 89%, 65%)",
+    backgroundPrimary: "#304c9b",
+    backgroundSecondary: "hsl(230, 89%, 65%)",
   },
   scissors: {
     isVisible: true,
-    outerCircleColorPrimary: "#c87117",
-    outerCircleColorSecondary: "hsl(40, 84%, 53%)",
+    backgroundPrimary: "#c87117",
+    backgroundSecondary: "hsl(40, 84%, 53%)",
   },
   rock: {
     isVisible: true,
-    outerCircleColorPrimary: "#9a1934",
-    outerCircleColorSecondary: "hsl(349, 70%, 56%)",
+    backgroundPrimary: "#9a1934",
+    backgroundSecondary: "hsl(349, 70%, 56%)",
   },
 })
 const playerPicked = ref<string | undefined>(undefined)
@@ -74,24 +71,31 @@ function handleResult(playerPicked: string, computerPicked: string) {
   }
   updateScoreAndEmit(result.value)
 }
-const resizeContainer = ref<boolean>(false)
-function handleGame(choice: string) {
+const resizeContainer = ref(false)
+
+function prepareGame(hand: string) {
+  isBackgroundVisible.value = false
+  playerPicked.value = hand
+  computerPicked.value = Object.keys(allHands)[Math.floor(Math.random() * 3)]
+}
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function playGameStepByStep() {
+  await delay(500)
+  showPlayerHand.value = true
+  await delay(Math.floor(Math.random() * (2500 - 1500 + 1) + 1500))
+  showOpponentHand.value = true
+  await delay(500)
+  resizeContainer.value = true
+  await delay(1000)
+}
+
+function handleGame(hand: string) {
   if (playerPicked.value === undefined) {
-    playerPicked.value = choice
-    computerPicked.value = Object.keys(allHands)[Math.floor(Math.random() * 3)]
-    isBackgroundVisible.value = false
-    setTimeout(() => {
-      showPlayerHand.value = true
-      setTimeout(() => {
-        showOpponentHand.value = true
-        setTimeout(() => {
-          resizeContainer.value = true
-          setTimeout(() => {
-            handleResult(playerPicked.value!, computerPicked.value!)
-          }, 1000)
-        }, 500)
-      }, Math.floor(Math.random() * (2500 - 1500 + 1) + 1500))
-    }, 500)
+    prepareGame(hand)
+    playGameStepByStep().then(() => {
+      handleResult(playerPicked.value!, computerPicked.value!)
+    })
   }
 }
 
@@ -108,6 +112,7 @@ function startNewGame() {
 <template>
   <div :class="['game-container', resizeContainer ? 'resize-container' : '']">
     <div :class="['game', showPlayerHand ? 'is-playing' : 'not-playing']">
+      <!-- Triangle Background with transition vanish when player made a choice -->
       <Transition>
         <img
           v-if="isBackgroundVisible"
@@ -116,36 +121,31 @@ function startNewGame() {
           alt="triangle"
         />
       </Transition>
-      <template v-for="(value, name) in allHands">
+      <!-- Before game start show all hands what you can pick from.
+          If player pick a hand, game will start and this will be hidden  -->
+      <template v-for="(hand, name) in allHands">
         <Transition>
           <Hand
             v-if="!playerPicked && !computerPicked"
-            :name="name"
-            :color-primary="value.outerCircleColorPrimary"
-            :color-secondary="value.outerCircleColorSecondary"
+            :handType="name"
+            :outerCircleBackgroundPrimary="hand.backgroundPrimary"
+            :outerCircleBackgroundSecondary="hand.backgroundSecondary"
             :class="[playerPicked === name ? 'player-picked' : name]"
             @click="handleGame(name)"
           />
         </Transition>
       </template>
+
+      <!-- After game start -->
       <div class="hands">
         <div v-if="showPlayerHand && playerPicked" class="player-hand">
           <Hand
             class="hand"
-            :name="playerPicked"
-            :color-primary="allHands[playerPicked].outerCircleColorPrimary"
-            :color-secondary="allHands[playerPicked].outerCircleColorSecondary"
+            :handType="playerPicked"
+            :outerCircleBackgroundPrimary="allHands[playerPicked].backgroundPrimary"
+            :outerCircleBackgroundSecondary="allHands[playerPicked].backgroundSecondary"
           />
           <div class="title">YOU PICKED</div>
-        </div>
-        <div v-if="showOpponentHand && computerPicked" class="computer-hand">
-          <Hand
-            class="hand"
-            :name="computerPicked"
-            :color-primary="allHands[computerPicked].outerCircleColorPrimary"
-            :color-secondary="allHands[computerPicked].outerCircleColorSecondary"
-          />
-          <div class="title">THE HOUSE PICKED</div>
         </div>
         <div v-if="!showOpponentHand && showPlayerHand" class="computer-hand skeleton">
           <div class="skeleton-circle-container">
@@ -153,7 +153,17 @@ function startNewGame() {
           </div>
           <div class="title">THE HOUSE PICKED</div>
         </div>
+        <div v-if="showOpponentHand && computerPicked" class="computer-hand">
+          <Hand
+            class="hand"
+            :handType="computerPicked"
+            :outerCircleBackgroundPrimary="allHands[computerPicked].backgroundPrimary"
+            :outerCircleBackgroundSecondary="allHands[computerPicked].backgroundSecondary"
+          />
+          <div class="title">THE HOUSE PICKED</div>
+        </div>
       </div>
+      <!-- Result label (win, loose, draw) with play again button -->
       <div v-if="result" class="result">
         <div class="result-title">{{ result }}</div>
         <button @click="startNewGame()">PLAY AGAIN</button>
