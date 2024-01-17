@@ -12,7 +12,7 @@ const updateScore = (newScore: number) => {
     </div>
   </main>
   <main>
-    <Game :score="score" :updateScore="updateScore" />
+    <Game :updateScore="updateScore" />
   </main>
   <Rules />
 </template>

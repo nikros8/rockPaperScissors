@@ -1,19 +1,26 @@
 <script setup lang="ts">
+import type { PropType } from "vue"
 import triangleSvg from "/assets/svg/bg-triangle.svg"
 
-const newScore = ref(0)
+const props = defineProps({
+  updateScore: {
+    type: Function as PropType<(score: number) => void>,
+    required: true,
+  },
+})
 
-const props = defineProps(["score", "updateScore"])
+const score = ref(0)
+
 const updateScoreAndEmit = (result: string) => {
   switch (result) {
     case "YOU WIN":
-      newScore.value += 1
+      score.value += 1
       break
     case "YOU LOSE":
-      newScore.value -= 1
+      score.value -= 1
       break
   }
-  props.updateScore(newScore.value)
+  props.updateScore(score.value)
 }
 
 const isBackgroundVisible = ref(true)
@@ -43,32 +50,26 @@ const computerPicked = ref<string | undefined>(undefined)
 const showPlayerHand = ref<boolean>(false)
 const showOpponentHand = ref<boolean>(false)
 
-const result = ref<string>("")
+const result = ref("")
 function handleResult(playerPicked: string, computerPicked: string) {
-  if (playerPicked !== computerPicked) {
-    switch (playerPicked + computerPicked) {
-      case "paperscissors":
-        result.value = "YOU LOSE"
-        break
-      case "scissorspaper":
-        result.value = "YOU WIN"
-        break
-      case "paperrock":
-        result.value = "YOU WIN"
-        break
-      case "rockpaper":
-        result.value = "YOU LOSE"
-        break
-      case "scissorsrock":
-        result.value = "YOU LOSE"
-        break
-      case "rockscissors":
-        result.value = "YOU WIN"
-        break
-    }
-  } else {
-    result.value = "DRAW"
+  switch (playerPicked + computerPicked) {
+    case "paperrock":
+    case "rockscissors":
+    case "scissorspaper":
+      result.value = "YOU WIN"
+      break
+    case "paperscissors":
+    case "rockpaper":
+    case "scissorsrock":
+      result.value = "YOU LOSE"
+      break
+    case "paperpaper":
+    case "rockrock":
+    case "scissorsscissors":
+      result.value = "DRAW"
+      break
   }
+
   updateScoreAndEmit(result.value)
 }
 const resizeContainer = ref(false)
