@@ -9,21 +9,47 @@ const props = defineProps({
   },
 })
 
-const score = ref(0)
-
-const updateScoreAndEmit = (result: string) => {
-  switch (result) {
-    case "YOU WIN":
-      score.value += 1
-      break
-    case "YOU LOSE":
-      score.value -= 1
-      break
-  }
-  props.updateScore(score.value)
+enum GameState {
+  start,
+  end,
 }
 
+enum GameResult {
+  win,
+  lose,
+  draw,
+}
+
+enum HandType {
+  rock,
+  paper,
+  scissors,
+}
+
+const score = ref(0)
+const resultLabel = ref("")
 const isBackgroundVisible = ref(true)
+
+let currentGameState: GameState
+let lastGameResult: GameResult
+
+const updateScoreAndEmit = (result: GameResult) => {
+  switch (result) {
+    case GameResult.win:
+      resultLabel.value = "YOU WIN"
+      score.value += 1
+      break
+    case GameResult.lose:
+      resultLabel.value = "YOU LOSE"
+      score.value -= 1
+      break
+    case GameResult.draw:
+      resultLabel.value = "DRAW"
+      break
+  }
+  currentGameState = GameState.end
+  props.updateScore(score.value)
+}
 
 const allHands: Record<
   string,
@@ -50,33 +76,29 @@ const computerPicked = ref<string | undefined>(undefined)
 const showPlayerHand = ref<boolean>(false)
 const showOpponentHand = ref<boolean>(false)
 
-const result = ref("")
-function handleResult(playerPicked: string, computerPicked: string) {
-  switch (playerPicked + computerPicked) {
-    case "paperrock":
-    case "rockscissors":
-    case "scissorspaper":
-      result.value = "YOU WIN"
-      break
-    case "paperscissors":
-    case "rockpaper":
-    case "scissorsrock":
-      result.value = "YOU LOSE"
-      break
-    case "paperpaper":
-    case "rockrock":
-    case "scissorsscissors":
-      result.value = "DRAW"
-      break
+function handleResult(playerPicked: string, computerPicked: string): GameResult {
+  const playerHand = getHandTypeFromString(playerPicked)
+  const computerHand = getHandTypeFromString(computerPicked)
+  switch (true) {
+    case playerHand === HandType.paper && computerHand === HandType.rock:
+    case playerHand === HandType.rock && computerHand === HandType.scissors:
+    case playerHand === HandType.scissors && computerHand === HandType.paper:
+      return GameResult.win
+    case playerHand === HandType.paper && computerHand === HandType.scissors:
+    case playerHand === HandType.rock && computerHand === HandType.paper:
+    case playerHand === HandType.scissors && computerHand === HandType.rock:
+      return GameResult.lose
+    case playerHand === computerHand:
+      return GameResult.draw
+    default:
+      return GameResult.draw // Add a default case to cover all possible code paths
   }
-
-  updateScoreAndEmit(result.value)
 }
 const resizeContainer = ref(false)
 
 function prepareGame(hand: string) {
   isBackgroundVisible.value = false
-  playerPicked.value = hand
+  playerPicked.value = hand.toString()
   computerPicked.value = Object.keys(allHands)[Math.floor(Math.random() * 3)]
 }
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
@@ -92,14 +114,15 @@ async function playGameStepByStep() {
 }
 
 function handleGame(hand: string) {
+  currentGameState = GameState.start
   if (playerPicked.value === undefined) {
     prepareGame(hand)
     playGameStepByStep().then(() => {
-      handleResult(playerPicked.value!, computerPicked.value!)
+      lastGameResult = handleResult(playerPicked.value!, computerPicked.value!)
+      updateScoreAndEmit(lastGameResult)
     })
   }
 }
-
 function startNewGame() {
   isBackgroundVisible.value = true
   showPlayerHand.value = false
@@ -107,7 +130,20 @@ function startNewGame() {
   playerPicked.value = undefined
   computerPicked.value = undefined
   resizeContainer.value = false
-  result.value = ""
+  resultLabel.value = ""
+}
+
+function getHandTypeFromString(typeString: string): HandType {
+  switch (typeString) {
+    case "rock":
+      return HandType.rock
+    case "paper":
+      return HandType.paper
+    case "scissors":
+      return HandType.scissors
+    default:
+      return HandType.rock // or handle the invalid case according to your needs
+  }
 }
 </script>
 <template>
@@ -124,15 +160,15 @@ function startNewGame() {
       </Transition>
       <!-- Before game start show all hands what you can pick from.
           If player pick a hand, game will start and this will be hidden  -->
-      <template v-for="(hand, name) in allHands">
+      <template v-for="(hand, key) in allHands">
         <Transition>
           <Hand
             v-if="!playerPicked && !computerPicked"
-            :handType="name"
+            :handType="key"
             :outerCircleBackgroundPrimary="hand.backgroundPrimary"
             :outerCircleBackgroundSecondary="hand.backgroundSecondary"
-            :class="[playerPicked === name ? 'player-picked' : name]"
-            @click="handleGame(name)"
+            :class="[playerPicked === key ? 'player-picked' : key]"
+            @click="handleGame(key)"
           />
         </Transition>
       </template>
@@ -165,8 +201,8 @@ function startNewGame() {
         </div>
       </div>
       <!-- Result label (win, loose, draw) with play again button -->
-      <div v-if="result" class="result">
-        <div class="result-title">{{ result }}</div>
+      <div v-if="resultLabel" class="result">
+        <div class="result-title">{{ resultLabel }}</div>
         <button @click="startNewGame()">PLAY AGAIN</button>
       </div>
     </div>
